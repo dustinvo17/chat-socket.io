@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+       
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script src="/socket.io/socket.io.js"></script>
+       <script
+  src="https://code.jquery.com/jquery-3.4.1.js"
+  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+  crossorigin="anonymous"></script>
+          <link rel="stylesheet" type="text/css" href="css/style.css" />
+    </head>
+    <body>
+      
+        <div class="container">
+            <div id="userFormArea" class="row">
+                <div class="col-md-12">
+                     <form id="userForm">
+                        <div class="form-group">
+                            <label>Enter UserName</label>
+                            <input class="form-control" id="username"></input>
+                            <br/>
+                            <input type="submit" class="btn btn-primary" value="Login"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="messageArea"class="row">
+                <div class="col-md-4">
+                    <div class="well">
+                        <h3>Online Users</h3>
+                        <ul class="list-group"id="users"></ul>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="chat" id="chat">
+
+                    </div>
+                    <form id="messageForm">
+                        <div class="form-group">
+                            <label>Enter Message</label>
+                            <textarea class="form-control" id="message"></textarea>
+                            <br/>
+                            <input type="submit" class="btn btn-primary" value="Send Message"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <script >
+        
+            $(function(){
+                console.log('s')
+                let socket = io.connect();
+                let $messageForm = $('#messageForm')
+                let $message = $('#message')
+                let $chat = $('#chat')
+                let $messageArea = $('#messageArea')
+                let $userForm = $('#userForm')
+                let $userFormArea = $('#userFormArea')
+                let $username = $('#username')
+                let $users = $('#users')
+                $messageForm.submit(function(e){
+                    e.preventDefault()
+                    socket.emit('send message', $message.val())
+                    $message.val('')
+                })
+                socket.on('new message',function(data){
+                    console.log(data)
+                    $chat.append(`<div>${data.name} : ${data.msg}</div>`)
+                })
+                $userForm.submit(function(e){
+                    e.preventDefault()
+                    socket.emit('register user',$username.val(),function(data){
+                        if(data){
+                            $userFormArea.hide()
+                            $messageArea.show()
+                        }
+                        
+                    })
+                })
+                socket.on('get user',data =>{
+                    console.log(data)
+                    let html = ''
+                    for(let i = 0 ; i < data.length;i++){
+                        html += `<li>${data[i]}</li>`
+                    }
+                    $users.html(html)
+                })
+            
+
+            })
+        </script>
+    </body>
+</html>
